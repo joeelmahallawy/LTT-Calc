@@ -123,7 +123,7 @@ const IndexPage = () => {
     <>
       <Center h="100vh" flexDirection="column">
         <Box bg="#C8C8C8" h="auto" w="auto" rounded={5} p="3%">
-          <Heading>Land Transfer Tax Calculator</Heading>
+          <Heading textAlign="center">Land Transfer Tax Calculator</Heading>
           <Center flexDirection="row" justifyContent="space-between">
             <Box mb={4}>
               <Checkbox
