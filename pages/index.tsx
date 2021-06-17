@@ -24,101 +24,218 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Table,
+  TableCaption,
+  Tbody,
+  Td,
+  Tfoot,
+  Th,
+  Thead,
+  Tr,
 } from "@chakra-ui/react";
 
-const IndexPage = () => {
-  const [tax, setTax] = React.useState(0);
-  function calcTax() {
-    const homeCheck = document.getElementById("homebuyer") as HTMLInputElement;
-    const home = homeCheck.checked;
-    const price = document.getElementById("asking") as HTMLInputElement;
-    const askingPrice = price.value;
-    const drop = document.getElementById("dropdown") as HTMLInputElement;
-    const dropMenu = drop.value;
+const ONTARIO_MIN_ASKING_PRICE = 368000;
+const ONTARIO_FIRST_BRACKET = 275;
+const ONTARIO_SECOND_BRACKET = 1950;
+const ONTARIO_THIRD_BRACKET = 2250;
+const ONTARIO_FOURTH_BRACKET = 32000;
+const ONTARIO_MAX_REFUND = 8475;
+const ONTARIO_FIRST_RANGE = 55000;
+const ONTARIO_SECOND_RANGE = 250000;
+const ONTARIO_THIRD_RANGE = 400000;
+const ONTARIO_FOURTH_RANGE = 2000000;
 
-    console.dir(document.getElementById("asking"));
-    console.log(dropMenu);
-    console.log(typeof +askingPrice);
+const BC_MIN_ASKING_PRICE = 500000;
+const BC_MAX_ASKING_PRICE = 525000;
+const BC_FIRST_BRACKET = 2000;
+const BC_SECOND_BRACKET = 36000;
+const BC_THIRD_BRACKET = 30000;
+const BC_FIRST_RANGE = 200000;
+const BC_SECOND_RANGE = 2000000;
+const BC_THIRD_RANGE = 3000000;
 
-    if (dropMenu == "ontario") {
-      if (home == false) {
-        if (+askingPrice < 55000.01) {
-          setTax(2 * +askingPrice * 0.005);
-        }
-        if (55000.01 < +askingPrice && +askingPrice < 250000.01) {
-          setTax(2 * ((+askingPrice - 55000) * 0.01 + 275));
-        }
-        if (250000.01 < +askingPrice && +askingPrice < 400000.01) {
-          setTax(2 * ((+askingPrice - 250000) * 0.015 + 1950 + 275));
-        }
-        if (+askingPrice < 2000000.01 && 400000.01 < +askingPrice) {
-          setTax(2 * ((+askingPrice - 400000) * 0.02 + 2250 + 1950 + 275));
-        }
-        if (+askingPrice > 2000000.0) {
-          setTax(
-            2 * ((+askingPrice - 2000000) * 0.025 + 32000 + 2250 + 1950 + 275)
-          );
-        }
-      } else {
-        if (+askingPrice < 368000) {
-          setTax(0);
-        }
+const PROVINCES = {
+  BC: "bc",
+  ON: "ontario",
+};
 
-        if (368000 < +askingPrice && +askingPrice < 400000.01) {
-          setTax(
-            2 * ((+askingPrice - 250000) * 0.015 + 1950 + 275) -
-              +askingPrice * 0.0217
-          );
-        }
-        if (+askingPrice < 2000000.01 && 400000.01 < +askingPrice) {
-          setTax(
-            2 * ((+askingPrice - 400000) * 0.02 + 2250 + 1950 + 275) - 8475
-          );
-        }
-        if (+askingPrice > 2000000.0) {
-          setTax(
-            2 * ((+askingPrice - 2000000) * 0.025 + 32000 + 2250 + 1950 + 275) -
-              8475
-          );
-        }
-      }
-    }
-    //---------------------BRITISH COLUMBIA---------------------------------//
-    else if (dropMenu == "bc") {
-      if (home == false) {
-        if (+askingPrice < 200000) {
-          setTax(+askingPrice * 0.01);
-        }
-        if (200000 < +askingPrice && +askingPrice < 2000000) {
-          setTax((+askingPrice - 200000) * 0.02 + 2000);
-        }
-        if (+askingPrice > 2000000 && 3000000 > +askingPrice) {
-          setTax((+askingPrice - 2000000) * 0.03 + 2000 + 36000);
-        }
-        if (+askingPrice > 3000000) {
-          setTax((+askingPrice - 3000000) * 0.03 + 36000 + 2000 + 30000);
-        }
-      } else {
-        if (+askingPrice < 500000) {
-          setTax(0);
-        }
-        if (500000 < +askingPrice && +askingPrice < 525000) {
-          setTax((+askingPrice - 500000) * 0.324);
-        }
-        if (525000 < +askingPrice && +askingPrice < 2000000) {
-          setTax((+askingPrice - 200000) * 0.02 + 2000);
-        }
-        if (+askingPrice > 2000000 && 3000000 > +askingPrice) {
-          setTax((+askingPrice - 2000000) * 0.03 + 2000 + 36000);
-        }
-        if (+askingPrice > 3000000) {
-          setTax((+askingPrice - 3000000) * 0.03 + 36000 + 2000 + 30000);
-        }
-      }
-    } else {
-      setTax(0);
-    }
+const ONTARIO_CONFIG = {
+  FIRST_RANGE: ONTARIO_FIRST_RANGE,
+  SECOND_RANGE: ONTARIO_SECOND_RANGE,
+  FIRST_RANGE_MULTIPLE: 2 * 0.005,
+  FIRST_BRACKET: ONTARIO_FIRST_BRACKET,
+  MIN_ASKING_PRICE: 368000,
+  SECOND_BRACKET: 1950,
+  THIRD_BRACKET: 2250,
+  FOURTH_BRACKET: 32000,
+  MAX_REFUND: 8475,
+  THIRD_RANGE: 400000,
+  FOURTH_RANGE: 2000000,
+};
+
+const CONFIG = {
+  [PROVINCES.ON]: ONTARIO_CONFIG,
+};
+
+const notFirstTimeHome = (province, price) => {
+  const config = CONFIG[province];
+
+  if (price < config.FIRST_RANGE) {
+    return price * config.FIRST_RANGE_MULTIPLE;
   }
+
+  if (config.FIRST_RANGE < price && price <= config.SECOND_RANGE) {
+    return 2 * ((price - config.FIRST_RANGE) * 0.01 + config.FIRST_BRACKET);
+  }
+};
+
+function ontarioCalcFirstTimeHome(price) {
+  if (price < ONTARIO_MIN_ASKING_PRICE) {
+    return 0;
+  }
+
+  if (ONTARIO_MIN_ASKING_PRICE < price && price < ONTARIO_THIRD_RANGE) {
+    return (
+      2 *
+        ((price - ONTARIO_SECOND_RANGE) * 0.015 +
+          ONTARIO_SECOND_BRACKET +
+          ONTARIO_FIRST_BRACKET) -
+      price * 0.0217
+    );
+  }
+  if (price < ONTARIO_FOURTH_RANGE && ONTARIO_THIRD_RANGE < price) {
+    return (
+      2 *
+        ((price - ONTARIO_THIRD_RANGE) * 0.02 +
+          ONTARIO_THIRD_BRACKET +
+          ONTARIO_SECOND_BRACKET +
+          ONTARIO_FIRST_BRACKET) -
+      ONTARIO_MAX_REFUND
+    );
+  }
+  if (price > ONTARIO_FOURTH_RANGE) {
+    return (
+      2 *
+        ((price - ONTARIO_FOURTH_RANGE) * 0.025 +
+          ONTARIO_FOURTH_BRACKET +
+          ONTARIO_THIRD_BRACKET +
+          ONTARIO_SECOND_BRACKET +
+          ONTARIO_FIRST_BRACKET) -
+      ONTARIO_MAX_REFUND
+    );
+  }
+}
+
+function ontarioNotFirstTimeHome(price) {
+  if (price < ONTARIO_FIRST_RANGE) {
+    return 2 * price * 0.005;
+  }
+  if (ONTARIO_FIRST_RANGE < price && price < ONTARIO_SECOND_RANGE) {
+    return 2 * ((price - ONTARIO_FIRST_RANGE) * 0.01 + ONTARIO_FIRST_BRACKET);
+  }
+  if (ONTARIO_SECOND_RANGE < price && price < ONTARIO_THIRD_RANGE) {
+    return (
+      2 *
+      ((price - ONTARIO_SECOND_RANGE) * 0.015 +
+        ONTARIO_SECOND_BRACKET +
+        ONTARIO_FIRST_BRACKET)
+    );
+  }
+  if (price < ONTARIO_FOURTH_RANGE && ONTARIO_THIRD_RANGE < price) {
+    return (
+      2 *
+      ((price - ONTARIO_THIRD_RANGE) * 0.02 +
+        ONTARIO_THIRD_BRACKET +
+        ONTARIO_SECOND_BRACKET +
+        ONTARIO_FIRST_BRACKET)
+    );
+  }
+  if (price > ONTARIO_FOURTH_RANGE) {
+    return (
+      2 *
+      ((price - ONTARIO_FOURTH_RANGE) * 0.025 +
+        ONTARIO_FOURTH_BRACKET +
+        ONTARIO_THIRD_BRACKET +
+        ONTARIO_SECOND_BRACKET +
+        ONTARIO_FIRST_BRACKET)
+    );
+  }
+}
+function bCFirstTimeHome(price) {
+  if (price < BC_MIN_ASKING_PRICE) {
+    return 0;
+  }
+  if (BC_MIN_ASKING_PRICE < price && price < BC_MAX_ASKING_PRICE) {
+    return (price - BC_MIN_ASKING_PRICE) * 0.324;
+  }
+  if (BC_MAX_ASKING_PRICE < price && price < BC_SECOND_RANGE) {
+    return (price - 200000) * 0.02 + BC_FIRST_BRACKET;
+  }
+  if (price > BC_SECOND_RANGE && BC_THIRD_RANGE > price) {
+    return (
+      (price - BC_SECOND_RANGE) * 0.03 + BC_FIRST_BRACKET + BC_SECOND_BRACKET
+    );
+  }
+  if (price > BC_THIRD_RANGE) {
+    return (
+      (price - BC_THIRD_RANGE) * 0.03 +
+      BC_FIRST_BRACKET +
+      BC_SECOND_BRACKET +
+      BC_THIRD_BRACKET
+    );
+  }
+}
+
+function bCNotFirstTimeHome(price) {
+  if (price < BC_FIRST_RANGE) {
+    return price * 0.01;
+  }
+
+  if (BC_FIRST_RANGE < price && price < BC_SECOND_RANGE) {
+    return (price - BC_FIRST_RANGE) * 0.02 + BC_FIRST_BRACKET;
+  }
+
+  if (price > BC_SECOND_RANGE && BC_THIRD_RANGE > price) {
+    return (
+      (price - BC_SECOND_RANGE) * 0.03 + BC_FIRST_BRACKET + BC_SECOND_BRACKET
+    );
+  }
+
+  if (price > BC_THIRD_RANGE) {
+    return (
+      (price - BC_THIRD_RANGE) * 0.03 +
+      BC_SECOND_BRACKET +
+      BC_FIRST_BRACKET +
+      BC_THIRD_BRACKET
+    );
+  }
+}
+
+const calculate = (province, askingPrice, isFirstTimeHomeBuyer) => {
+  if (province == PROVINCES.ON) {
+    if (isFirstTimeHomeBuyer) {
+      return ontarioCalcFirstTimeHome(askingPrice);
+    }
+
+    return ontarioNotFirstTimeHome(askingPrice);
+  }
+
+  if (province == PROVINCES.BC) {
+    if (isFirstTimeHomeBuyer) {
+      return bCFirstTimeHome(askingPrice);
+    }
+
+    return bCNotFirstTimeHome(askingPrice);
+  }
+
+  return 0;
+};
+
+const IndexPage = () => {
+  const [province, setProvince] = React.useState(null);
+  const [isFirstTimeHomeBuyer, setIsFirstTimeHomeBuyer] = React.useState(false);
+  const [askingPrice, setAskingPrice] = React.useState(0);
+
   return (
     <>
       <Center h="100vh" flexDirection="column">
@@ -131,7 +248,10 @@ const IndexPage = () => {
                 width={250}
                 size="md"
                 pt={10}
-                checked={false}
+                checked={isFirstTimeHomeBuyer}
+                onChange={(e) =>
+                  setIsFirstTimeHomeBuyer(e.target.checked as boolean)
+                }
               >
                 I am a first time home-buyer
               </Checkbox>
@@ -142,15 +262,25 @@ const IndexPage = () => {
                 <FormLabel fontSize="15px" ml={2}>
                   Province:
                 </FormLabel>
-                <Select id="dropdown" placeholder="Select region" w={200}>
+                <Select
+                  id="dropdown"
+                  placeholder="Select region"
+                  w={200}
+                  onChange={(e) => setProvince(e.target.value)}
+                >
                   <option value="ontario">Ontario</option>
-                  <option value="bc">British Columbia</option>
+                  <option value={PROVINCES.BC}>British Columbia</option>
                 </Select>
               </FormControl>
             </Box>
             <Box>
               <FormLabel ml={5}>Asking price</FormLabel>
-              <NumberInput id="asking" onChange={calcTax}>
+              <NumberInput
+                min={0}
+                onChange={(valueString, valueNumber) =>
+                  setAskingPrice(Number.isNaN(valueNumber) ? 0 : valueNumber)
+                }
+              >
                 <NumberInputField placeholder="$0" />
                 <NumberInputStepper>
                   <NumberIncrementStepper />
@@ -165,12 +295,47 @@ const IndexPage = () => {
             </Box>
           </Center>
         </Box>
-        <Alert id="alert" status="success" mt={5} width="auto" maxHeight="15%">
+        <Alert id="alert" status="success" mt={5} width="auto">
           <Center fontSize="20px">
-            Your total land transfer tax amount is ${Math.ceil(tax)}
+            Your total land transfer tax amount is $
+            {Math.ceil(calculate(province, askingPrice, isFirstTimeHomeBuyer))}
           </Center>
         </Alert>
       </Center>{" "}
+      {/* <Table variant="simple">
+        <TableCaption>Imperial to metric conversion factors</TableCaption>
+        <Thead>
+          <Tr>
+            <Th>To convert</Th>
+            <Th>into</Th>
+            <Th isNumeric>multiply by</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          <Tr>
+            <Td>inches</Td>
+            <Td>millimetres (mm)</Td>
+            <Td isNumeric>25.4</Td>
+          </Tr>
+          <Tr>
+            <Td>feet</Td>
+            <Td>centimetres (cm)</Td>
+            <Td isNumeric>30.48</Td>
+          </Tr>
+          <Tr>
+            <Td>yards</Td>
+            <Td>metres (m)</Td>
+            <Td isNumeric>0.91444</Td>
+          </Tr>
+        </Tbody>
+        <Tfoot>
+          <Tr>
+            <Th>To convert</Th>
+            <Th>into</Th>
+            <Th isNumeric>multiply by</Th>
+          </Tr>
+        </Tfoot>
+      </Table> */}
     </>
   );
 };
