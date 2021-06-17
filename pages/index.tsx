@@ -29,83 +29,90 @@ import {
 const IndexPage = () => {
   const [tax, setTax] = React.useState(0);
   function calcTax() {
-    const askingPrice = document.getElementById("asking").value;
-    const home = document.getElementById("homebuyer");
-    const dropMenu = document.getElementById("dropdown");
+    const homeCheck = document.getElementById("homebuyer") as HTMLInputElement;
+    const home = homeCheck.checked;
+    const price = document.getElementById("asking") as HTMLInputElement;
+    const askingPrice = price.value;
+    const drop = document.getElementById("dropdown") as HTMLInputElement;
+    const dropMenu = drop.value;
 
-    if (dropMenu.value == "ontario") {
-      if (home.checked == false) {
-        if (askingPrice < 55000.01) {
-          setTax(2 * askingPrice * 0.005);
+    console.dir(document.getElementById("asking"));
+    console.log(dropMenu);
+    console.log(typeof +askingPrice);
+
+    if (dropMenu == "ontario") {
+      if (home == false) {
+        if (+askingPrice < 55000.01) {
+          setTax(2 * +askingPrice * 0.005);
         }
-        if (55000.01 < askingPrice && askingPrice < 250000.01) {
-          setTax(2 * ((askingPrice - 55000) * 0.01 + 275));
+        if (55000.01 < +askingPrice && +askingPrice < 250000.01) {
+          setTax(2 * ((+askingPrice - 55000) * 0.01 + 275));
         }
-        if (250000.01 < askingPrice && askingPrice < 400000.01) {
-          setTax(2 * ((askingPrice - 250000) * 0.015 + 1950 + 275));
+        if (250000.01 < +askingPrice && +askingPrice < 400000.01) {
+          setTax(2 * ((+askingPrice - 250000) * 0.015 + 1950 + 275));
         }
-        if (askingPrice < 2000000.01 && 400000.01 < askingPrice) {
-          setTax(2 * ((askingPrice - 400000) * 0.02 + 2250 + 1950 + 275));
+        if (+askingPrice < 2000000.01 && 400000.01 < +askingPrice) {
+          setTax(2 * ((+askingPrice - 400000) * 0.02 + 2250 + 1950 + 275));
         }
-        if (askingPrice > 2000000.0) {
+        if (+askingPrice > 2000000.0) {
           setTax(
-            2 * ((askingPrice - 2000000) * 0.025 + 32000 + 2250 + 1950 + 275)
+            2 * ((+askingPrice - 2000000) * 0.025 + 32000 + 2250 + 1950 + 275)
           );
         }
       } else {
-        if (askingPrice < 368000) {
+        if (+askingPrice < 368000) {
           setTax(0);
         }
 
-        if (368000 < askingPrice && askingPrice < 400000.01) {
+        if (368000 < +askingPrice && +askingPrice < 400000.01) {
           setTax(
-            2 * ((askingPrice - 250000) * 0.015 + 1950 + 275) -
-              askingPrice * 0.0217
+            2 * ((+askingPrice - 250000) * 0.015 + 1950 + 275) -
+              +askingPrice * 0.0217
           );
         }
-        if (askingPrice < 2000000.01 && 400000.01 < askingPrice) {
+        if (+askingPrice < 2000000.01 && 400000.01 < +askingPrice) {
           setTax(
-            2 * ((askingPrice - 400000) * 0.02 + 2250 + 1950 + 275) - 8475
+            2 * ((+askingPrice - 400000) * 0.02 + 2250 + 1950 + 275) - 8475
           );
         }
-        if (askingPrice > 2000000.0) {
+        if (+askingPrice > 2000000.0) {
           setTax(
-            2 * ((askingPrice - 2000000) * 0.025 + 32000 + 2250 + 1950 + 275) -
+            2 * ((+askingPrice - 2000000) * 0.025 + 32000 + 2250 + 1950 + 275) -
               8475
           );
         }
       }
     }
     //---------------------BRITISH COLUMBIA---------------------------------//
-    else if (dropMenu.value == "bc") {
-      if (home.checked == false) {
-        if (askingPrice < 200000) {
-          setTax(askingPrice * 0.01);
+    else if (dropMenu == "bc") {
+      if (home == false) {
+        if (+askingPrice < 200000) {
+          setTax(+askingPrice * 0.01);
         }
-        if (200000 < askingPrice && askingPrice < 2000000) {
-          setTax((askingPrice - 200000) * 0.02 + 2000);
+        if (200000 < +askingPrice && +askingPrice < 2000000) {
+          setTax((+askingPrice - 200000) * 0.02 + 2000);
         }
-        if (askingPrice > 2000000 && 3000000 > askingPrice) {
-          setTax((askingPrice - 2000000) * 0.03 + 2000 + 36000);
+        if (+askingPrice > 2000000 && 3000000 > +askingPrice) {
+          setTax((+askingPrice - 2000000) * 0.03 + 2000 + 36000);
         }
-        if (askingPrice > 3000000) {
-          setTax((askingPrice - 3000000) * 0.03 + 36000 + 2000 + 30000);
+        if (+askingPrice > 3000000) {
+          setTax((+askingPrice - 3000000) * 0.03 + 36000 + 2000 + 30000);
         }
       } else {
-        if (askingPrice < 500000) {
+        if (+askingPrice < 500000) {
           setTax(0);
         }
-        if (500000 < askingPrice && askingPrice < 525000) {
-          setTax((askingPrice - 500000) * 0.324);
+        if (500000 < +askingPrice && +askingPrice < 525000) {
+          setTax((+askingPrice - 500000) * 0.324);
         }
-        if (525000 < askingPrice && askingPrice < 2000000) {
-          setTax((askingPrice - 200000) * 0.02 + 2000);
+        if (525000 < +askingPrice && +askingPrice < 2000000) {
+          setTax((+askingPrice - 200000) * 0.02 + 2000);
         }
-        if (askingPrice > 2000000 && 3000000 > askingPrice) {
-          setTax((askingPrice - 2000000) * 0.03 + 2000 + 36000);
+        if (+askingPrice > 2000000 && 3000000 > +askingPrice) {
+          setTax((+askingPrice - 2000000) * 0.03 + 2000 + 36000);
         }
-        if (askingPrice > 3000000) {
-          setTax((askingPrice - 3000000) * 0.03 + 36000 + 2000 + 30000);
+        if (+askingPrice > 3000000) {
+          setTax((+askingPrice - 3000000) * 0.03 + 36000 + 2000 + 30000);
         }
       }
     } else {
@@ -115,7 +122,7 @@ const IndexPage = () => {
   return (
     <>
       <Center h="100vh" flexDirection="column">
-        <Box bg="gray" h="auto" w="auto" rounded={5} p="3%">
+        <Box bg="#C8C8C8" h="auto" w="auto" rounded={5} p="3%">
           <Heading>Land Transfer Tax Calculator</Heading>
           <Center flexDirection="row" justifyContent="space-between">
             <Box mb={4}>
@@ -158,7 +165,7 @@ const IndexPage = () => {
             </Box>
           </Center>
         </Box>
-        <Alert id="alert" status="success" mt={5} width="50%" maxHeight="15%">
+        <Alert id="alert" status="success" mt={5} width="auto" maxHeight="15%">
           <Center fontSize="20px">
             Your total land transfer tax amount is ${Math.ceil(tax)}
           </Center>
